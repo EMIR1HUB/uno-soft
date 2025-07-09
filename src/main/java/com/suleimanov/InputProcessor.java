@@ -43,7 +43,7 @@ public class InputProcessor {
             return false;
         }
 
-        // Удаляет обёртку в двойных кавычках, если есть
+        // удаляем обёртку в двойных кавычках, если есть
         if (line.startsWith("\"") && line.endsWith("\"") && line.length() > 1) {
             line = line.substring(1, line.length() - 1);
         }
