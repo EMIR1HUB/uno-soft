@@ -1,8 +1,18 @@
 package com.suleimanov;
 
-import java.io.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
