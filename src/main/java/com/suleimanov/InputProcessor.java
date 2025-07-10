@@ -1,25 +1,26 @@
 package com.suleimanov;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
+
+import org.apache.commons.compress.archivers.sevenz.SevenZArchiveEntry;
+import org.apache.commons.compress.archivers.sevenz.SevenZFile;
+
+import static com.suleimanov.FileFormat.GZ;
+import static com.suleimanov.FileFormat.SEVEN_Z;
 
 /**
  * @author Emir Suleimanov
  */
 public class InputProcessor {
 
-    public static List<String> readValidUniqueLines(String gzFilePath) throws IOException {
+    public static List<String> readValidUniqueLines(String filePath) throws IOException {
         List<String> lines = new ArrayList<>();
         Map<String, Integer> lineToId = new HashMap<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            new GZIPInputStream(new FileInputStream(gzFilePath)), StandardCharsets.UTF_8))
-        ) {
+        try (BufferedReader reader = getBufferedReader(filePath)) {
             String line;
             int lineIndex = 0;
 
@@ -36,6 +37,45 @@ public class InputProcessor {
             }
         }
         return lines;
+    }
+
+    private static BufferedReader getBufferedReader(String path) throws IOException {
+        if (path.endsWith(GZ.getName())) {
+            return new BufferedReader(new InputStreamReader(
+                new GZIPInputStream(new FileInputStream(path)), StandardCharsets.UTF_8),
+                64 * 1024 // 64 KB буфер
+            );
+        }
+        else if (path.endsWith(SEVEN_Z.getName())) {
+            return read7zFile(path);
+        }
+        else { // обычный .txt или без расширения
+            return new BufferedReader(
+                new InputStreamReader(new FileInputStream(path), StandardCharsets.UTF_8),
+                64 * 1024
+            );
+        }
+    }
+
+    private static BufferedReader read7zFile(String path) throws IOException {
+        SevenZFile sevenZFile = new SevenZFile(new File(path));
+        SevenZArchiveEntry entry = sevenZFile.getNextEntry();
+
+        if (entry == null || entry.getSize() > Integer.MAX_VALUE) {
+            throw new IOException("7z файл пуст или слишком большой");
+        }
+
+        byte[] content = new byte[(int) entry.getSize()];
+        int offset = 0;
+        int bytesRead;
+
+        while ((bytesRead = sevenZFile.read(content, offset, content.length - offset)) > 0) {
+            offset += bytesRead;
+        }
+        sevenZFile.close();
+
+        return new BufferedReader(new InputStreamReader(
+            new ByteArrayInputStream(content), StandardCharsets.UTF_8));
     }
 
     private static boolean isValid(String line) {

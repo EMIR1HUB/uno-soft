@@ -26,7 +26,6 @@ public class Main {
         writeGroupsToFile(groups, outputPath);
 
         long elapsedMillis = (System.nanoTime() - startTime) / 1_000_000;
-
         System.out.println("Количество групп с более чем одним элементом: " + groups.size());
         System.out.println("Время выполнения: " + elapsedMillis + " мс");
     }
